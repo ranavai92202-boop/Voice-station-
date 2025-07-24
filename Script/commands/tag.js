@@ -1,39 +1,37 @@
-const config = {
- name: "tag",
- version: "1.6.9",
- credits: "Nazrul",
- cooldown: 2,
- permission: 0,
- description: "Tag user",
- commandCategory: "tag",
- usages: "reply or mention"
+module.exports.config = {
+  name: "tag",
+  version: "1.0.0",
+  hasPermssion: 2,
+  credits: "Shahadat Islam",
+  description: "Group এ সবাইকে 10 বার mention করার কমান্ড",
+  commandCategory: "group",
+  usages: "/sobai",
+  cooldowns: 5
 };
 
-const run = async ({ api, args, event }) => {
- try {
- const ID = event.messageReply.senderID || args[0];
- const mentionedUser = await api.getUserInfo(ID);
- if (mentionedUser && mentionedUser[ID]) {
- const userName = mentionedUser[ID].name;
- const text = args.join(" ");
- await api.sendMessage({
- body: `${userName} ${text}`,
- mentions: [{
- tag: userName,
- id: ID 
- }]
- }, event.threadID, event.messageID);
-} else {
- api.sendMessage("", event.threadID, event.messageID);
- }
-} catch (error) {
- console.log(error);
- api.sendMessage(`Error: ${error.message}`, event.threadID, event.messageID);
-}
-};
+module.exports.run = async ({ api, event }) => {
+  const threadID = event.threadID;
+  const threadInfo = await api.getThreadInfo(threadID);
+  const mentions = [];
+  const memberIDs = threadInfo.participantIDs;
 
-module.exports = {
-config, 
-run,
-run: run
+  for (let id of memberIDs) {
+    if (id != api.getCurrentUserID()) {
+      mentions.push({
+        tag: "@everyone",
+        id: id
+      });
+    }
+  }
+
+  const message = {
+    body: `📢 @everyone\n\nসবাই চিপা থেকে বের হও🐸`,
+    mentions
+  };
+
+  
+  for (let i = 0; i < 10; i++) {
+    await new Promise(resolve => setTimeout(resolve, 1000)); 
+    api.sendMessage(message, threadID);
+  }
 };
